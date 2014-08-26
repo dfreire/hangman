@@ -11,7 +11,7 @@ func TestCreate(t *testing.T) {
 	db := openBoltDB()
 	defer closeBoltDB(db)
 
-	hangman.New(db)
+	hangman.NewHangman(db)
 }
 
 func openBoltDB() *bolt.DB {

@@ -2,12 +2,14 @@ package hangman
 
 import (
 	"github.com/boltdb/bolt"
+	"github.com/puffinframework/app"
 )
 
-type Aggregate struct {
-	db *bolt.DB
+type Hangman struct {
+	db  *bolt.DB
+	app *app.App
 }
 
-func New(db *bolt.DB) *Aggregate {
-	return &Aggregate{db: db}
+func NewHangman(db *bolt.DB) *Hangman {
+	return &Hangman{db: db, app: app.NewApp(db)}
 }
