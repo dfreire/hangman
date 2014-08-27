@@ -12,12 +12,16 @@ type Hangman struct {
 
 func NewHangman(db *bolt.DB) *Hangman {
 	hangman := &Hangman{db: db, app: app.NewApp(db)}
-	exists, err := hangman.app.ExistsApp("hangman")
+	hangman.setup()
+	return hangman
+}
+
+func (self *Hangman) setup() {
+	exists, err := self.app.ExistsApp("hangman")
 	if err != nil {
 		panic(err)
 	}
 	if !exists {
-		hangman.app.CreateApp("Hangman")
+		self.app.CreateApp("Hangman")
 	}
-	return hangman
 }
