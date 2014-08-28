@@ -11,12 +11,18 @@ type Hangman struct {
 }
 
 type Game struct {
-	Cards []Card
+	Title  string
+	Cards  []Card
+	Author Author
 }
 
 type Card struct {
 	front string
 	back  string
+}
+
+type Author struct {
+	userId string
 }
 
 func NewHangman(db *bolt.DB) *Hangman {
