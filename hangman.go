@@ -10,6 +10,15 @@ type Hangman struct {
 	app *app.App
 }
 
+type Game struct {
+	Cards []Card
+}
+
+type Card struct {
+	front string
+	back  string
+}
+
 func NewHangman(db *bolt.DB) *Hangman {
 	hangman := &Hangman{db: db, app: app.NewApp(db)}
 	hangman.setup()
