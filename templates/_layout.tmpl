@@ -14,14 +14,17 @@
         <link rel="stylesheet" href="css/main.css">
 
         <script src="js/vendor/modernizr-2.6.2.min.js"></script>
+        <script src="/bower_components/senna/build/senna-debug.js"></script>
     </head>
-    <body>
+    <body data-senna>
 
         <div class="container">
             <h1 class="title">O Jogo do Enforcado!</h1>
             <div class="menu"> <a href="/">jogar</a> | <a href="/create">criar</a></div>
-            <div class="content">
-                {{ yield }}
+            <div id="content" data-senna-surface>
+                <div id="content-default">
+                    {{ yield }}
+                </div>
             </div>
         </div>
 
