@@ -11,18 +11,21 @@ type Hangman struct {
 }
 
 type Game struct {
-	Title  string
-	Cards  []Card
-	Author Author
+	Title    string
+	Cards    []Card
+	Author   Author
+	Approved bool
 }
 
 type Card struct {
-	front string
-	back  string
+	Front    string
+	Back     string
+	AdText   string
+	Approved bool
 }
 
 type Author struct {
-	userId string
+	UserId string
 }
 
 func NewHangman(db *bolt.DB) *Hangman {
