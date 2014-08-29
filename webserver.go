@@ -17,5 +17,9 @@ func Run() {
 		r.HTML(200, "create", "", render.HTMLOptions{Layout: "_layout"})
 	})
 
+	m.NotFound(func(r render.Render) {
+		r.HTML(404, "404", nil)
+	})
+
 	m.Run()
 }
