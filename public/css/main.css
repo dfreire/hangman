@@ -218,3 +218,7 @@ textarea {
         page-break-after: avoid;
     }
 }
+
+.title {
+    text-align: center;
+}
