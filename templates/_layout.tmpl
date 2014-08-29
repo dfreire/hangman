@@ -19,7 +19,10 @@
 
         <div class="container">
             <h1 class="title">O Jogo do Enforcado!</h1>
-            {{ yield }}
+            <div class="menu"> <a href="/">jogar</a> | <a href="/create">criar</a></div>
+            <div class="content">
+                {{ yield }}
+            </div>
         </div>
 
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>

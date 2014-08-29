@@ -12,5 +12,10 @@ func Run() {
 	m.Get("/", func(r render.Render) {
 		r.HTML(200, "index", "", render.HTMLOptions{Layout: "_layout"})
 	})
+
+	m.Get("/create", func(r render.Render) {
+		r.HTML(200, "create", "", render.HTMLOptions{Layout: "_layout"})
+	})
+
 	m.Run()
 }
