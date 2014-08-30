@@ -2,6 +2,8 @@
     "name": "hangman",
     "version": "0.0.1",
     "dependencies": {
+        "uikit": "*",
+        "react": "*",
         "senna": "*"
     }
 }
