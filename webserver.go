@@ -13,6 +13,14 @@ func Run() {
 		r.HTML(200, "play", "", render.HTMLOptions{Layout: "_layout"})
 	})
 
+	m.Get("/play", func(r render.Render) {
+		r.HTML(200, "play", "", render.HTMLOptions{Layout: "_layout"})
+	})
+
+	m.Get("/list", func(r render.Render) {
+		r.HTML(200, "list", "", render.HTMLOptions{Layout: "_layout"})
+	})
+
 	m.Get("/create", func(r render.Render) {
 		r.HTML(200, "create", "", render.HTMLOptions{Layout: "_layout"})
 	})

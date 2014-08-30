@@ -231,3 +231,7 @@ textarea {
 .menu {
     text-align: center;
 }
+
+.menulink {
+    margin: 10px;
+}
