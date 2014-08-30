@@ -10,22 +10,17 @@ type Hangman struct {
 	app *app.App
 }
 
-type Game struct {
-	Title    string
-	Cards    []Card
-	Author   Author
-	Approved bool
-}
-
 type Card struct {
-	Front    string
-	Back     string
-	AdText   string
-	Approved bool
+	Front     string
+	Back      string
+	Url       string
+	Author    Author
+	Approved  bool
+	FlagCount int
 }
 
 type Author struct {
-	UserId string
+	email string
 }
 
 func NewHangman(db *bolt.DB) *Hangman {
