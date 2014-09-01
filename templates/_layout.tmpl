@@ -16,26 +16,40 @@
         -->
         <link rel="stylesheet" href="css/main.css">
 
+        <script src="/bower_components/jquery/jquery.min.js"></script>
         <script src="/bower_components/uikit/dist/js/uikit.min.js"></script>
         <script src="/bower_components/senna/build/senna-min.js"></script>
     </head>
     <body data-senna>
 
-        <div class="container">
-            <h1 class="title">O Jogo do Enforcado!</h1>
-            <div class="menu">
-                <a class="menulink" href="/play">jogar</a>
-                <a class="menulink" href="/list">escolher</a>
-                <a class="menulink" href="/create">criar</a>
-            </div>
-            <div id="content" data-senna-surface>
-                <div id="content-default" class="uk-container">
-                    {{ yield }}
+        <div  class="uk-container uk-margin-top uk-margin-large-bottom">
+            <div class="uk-grid">
+                <div class="uk-width-1-1">
+                    <h1 class="my-font">O Jogo do Enforcado!</h1>
+                <div>
+                <div class="uk-width-1-1">
+                    <div class="uk-grid">
+                        <div class="uk-width-1-3">
+                            <h2 class="my-font uk-display-inline"><a class="" href="/play">jogar</a></h2>
+                        </div>
+                        <div class="uk-width-1-3">
+                            <h2 class="my-font uk-display-inline"><a href="/list">escolher</a></h2>
+                        </div>
+                        <div class="uk-width-1-3">
+                            <h2 class="my-font uk-display-inline"><a href="/create">criar</a></h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="uk-width-1-1">
+                    <div id="content" data-senna-surface>
+                        <div id="content-default">
+                            {{ yield }}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <script src="/bower_components/jquery/jquery.min.js"></script>
         <script src="js/main.js"></script>
 
         <!--

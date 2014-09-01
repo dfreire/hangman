@@ -1,16 +1,6 @@
-.container {
-    width: 800px;
-    margin: auto;
+@import url(http://fonts.googleapis.com/css?family=Mouse+Memoirs);
+
+.my-font {
+    font-family: 'Mouse Memoirs', sans-serif;
 }
 
-.title {
-    text-align: center;
-}
-
-.menu {
-    text-align: center;
-}
-
-.menulink {
-    margin: 10px;
-}
