@@ -3,12 +3,17 @@ package hangman
 import (
 	"github.com/boltdb/bolt"
 	"github.com/puffinframework/app"
+	"github.com/puffinframework/event"
 )
 
 type Hangman struct {
 	db  *bolt.DB
 	app *app.App
 }
+
+const (
+	CreatedCardEvent event.Type = "CreatedCardEvent"
+)
 
 type Card struct {
 	Front     string
@@ -37,4 +42,8 @@ func (self *Hangman) setup() {
 	if !exists {
 		self.app.CreateApp("Hangman")
 	}
+}
+
+func (self *Hangman) CreateCard(appId string) (evt event.Event, err error) {
+    return nil, nil
 }
