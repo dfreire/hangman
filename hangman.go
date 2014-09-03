@@ -45,5 +45,13 @@ func (self *Hangman) setup() {
 }
 
 func (self *Hangman) CreateCard(appId string) (evt event.Event, err error) {
-    return nil, nil
+	return nil, nil
+}
+
+func onCreatedCard(evt event.Event) error {
+	return nil
+}
+
+func (self *Hangman) OnCreatedCard(evt event.Event) error {
+	return onCreatedCard(evt)
 }
