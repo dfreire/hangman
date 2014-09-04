@@ -46,20 +46,12 @@ func (self *Hangman) setup() {
 	}
 }
 
-type CreateCardRequestData struct {
-	AppId    string
-	Front    string
-	Back     string
-	Url      string
-	AuthorId string
-}
-
-func (self *Hangman) CreateCard(data CreateCardRequestData) (evt event.Event, err error) {
+func (self *Hangman) CreateCard(appId, front, back, url, authorId string) (evt event.Event, err error) {
 	evt = event.NewEvent(CreatedCardEvent, 1, Card{
-		Front:    data.Front,
-		Back:     data.Back,
-		Url:      data.Url,
-		AuthorId: data.AuthorId})
+		Front:    front,
+		Back:     back,
+		Url:      url,
+		AuthorId: authorId})
 	return
 }
 
