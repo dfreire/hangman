@@ -20,7 +20,7 @@ type Card struct {
 	Front     string
 	Back      string
 	Url       string
-	Author    Author
+	AuthorId  string
 	Approved  bool
 	FlagCount int
 }
@@ -46,16 +46,21 @@ func (self *Hangman) setup() {
 	}
 }
 
-type CreateCardRequest struct {
-	AppId       string
-	Front       string
-	Back        string
-	Url         string
-	AuthorEmail string
+type CreateCardRequestData struct {
+	AppId    string
+	Front    string
+	Back     string
+	Url      string
+	AuthorId string
 }
 
-func (self *Hangman) CreateCard(request CreateCardRequest) (evt event.Event, err error) {
-	return nil, nil
+func (self *Hangman) CreateCard(data CreateCardRequestData) (evt event.Event, err error) {
+	evt = event.NewEvent(CreatedCardEvent, 1, Card{
+		Front:    data.Front,
+		Back:     data.Back,
+		Url:      data.Url,
+		AuthorId: data.AuthorId})
+	return
 }
 
 func onCreatedCard(evt event.Event) error {
