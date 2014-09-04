@@ -16,6 +16,7 @@ const (
 )
 
 type Card struct {
+	Id        string
 	Front     string
 	Back      string
 	Url       string
@@ -25,6 +26,7 @@ type Card struct {
 }
 
 type Author struct {
+	Id    string
 	email string
 }
 
@@ -44,7 +46,15 @@ func (self *Hangman) setup() {
 	}
 }
 
-func (self *Hangman) CreateCard(appId string) (evt event.Event, err error) {
+type CreateCardRequest struct {
+	AppId       string
+	Front       string
+	Back        string
+	Url         string
+	AuthorEmail string
+}
+
+func (self *Hangman) CreateCard(request CreateCardRequest) (evt event.Event, err error) {
 	return nil, nil
 }
 
