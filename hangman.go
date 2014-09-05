@@ -17,8 +17,9 @@ const (
 
 type Card struct {
 	Id        string
-	Front     string
-	Back      string
+	Theme     string
+	Clue      string
+	Answer    string
 	Url       string
 	AuthorId  string
 	Approved  bool
@@ -46,12 +47,13 @@ func (self *Hangman) setup() {
 	}
 }
 
-func (self *Hangman) CreateCard(appId, front, back, url, authorId string) (evt event.Event, err error) {
+func (self *Hangman) CreateCard(appId, clue, answer, url, authorId string) (evt event.Event, err error) {
 	evt = event.NewEvent(CreatedCardEvent, 1, Card{
-		Front:    front,
-		Back:     back,
+		Clue:     clue,
+		Answer:   answer,
 		Url:      url,
-		AuthorId: authorId})
+		AuthorId: authorId,
+	})
 	return
 }
 
