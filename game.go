@@ -43,7 +43,7 @@ func (self *Hangman) OnCreatedGame(evt event.Event) error {
 }
 
 func (self *Hangman) UpdateGame(appId, gameId, theme, clue, answer, url, authorId string) (evt event.Event, err error) {
-	evt = event.NewEvent(UpdatedGameEvent, 1, Game{
+	game := Game{
 		Id:       gameId,
 		AppId:    appId,
 		Theme:    theme,
@@ -51,16 +51,9 @@ func (self *Hangman) UpdateGame(appId, gameId, theme, clue, answer, url, authorI
 		Answer:   answer,
 		Url:      url,
 		AuthorId: authorId,
-	})
-	return evt, onUpdatedGame(evt)
-}
-
-func onUpdatedGame(evt event.Event) error {
-	return nil
-}
-
-func (self *Hangman) OnUpdatedGame(evt event.Event) error {
-	return onUpdatedGame(evt)
+	}
+	evt = event.NewEvent(UpdatedGameEvent, 1, game)
+	return
 }
 
 func (self *Hangman) RemoveGame(appId, gameId, authorId string) (evt event.Event, err error) {
