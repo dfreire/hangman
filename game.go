@@ -79,3 +79,16 @@ func (self *Hangman) OnRemovedGame(evt event.Event) error {
 		return onRemovedGame(b, evt.Data().(Game))
 	})
 }
+
+func (self *Hangman) ExistsGame(gameId, appId string) (exists bool, err error) {
+	err = self.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(gamesBucketName))
+		exists = existsGame(b, gameId, appId)
+		return nil
+	})
+	return
+}
+
+func existsGame(b *bolt.Bucket, gameId, appId string) bool {
+	return appId == string(b.Get([]byte(gameId)))
+}
