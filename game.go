@@ -2,6 +2,7 @@ package hangman
 
 import (
 	"github.com/puffinframework/event"
+    "github.com/satori/go.uuid"
 )
 
 const (
@@ -12,6 +13,8 @@ const (
 
 func (self *Hangman) CreateGame(appId, theme, clue, answer, url, authorId string) (evt event.Event, err error) {
 	evt = event.NewEvent(CreatedGameEvent, 1, Game{
+        AppId:    appId,
+        Id:       uuid.NewV1().String(),
 		Theme:    theme,
 		Clue:     clue,
 		Answer:   answer,
