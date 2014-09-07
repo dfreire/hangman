@@ -1,41 +1,50 @@
 package hangman
 
 import (
+	"github.com/boltdb/bolt"
 	"github.com/puffinframework/event"
 	"github.com/satori/go.uuid"
 )
 
 const (
+	gamesBucketName             = "HangmanGames"
 	CreatedGameEvent event.Type = "CreatedGameEvent"
 	UpdatedGameEvent event.Type = "UpdatedGameEvent"
 	RemovedGameEvent event.Type = "RemovedGameEvent"
 )
 
 func (self *Hangman) CreateGame(appId, theme, clue, answer, url, authorId string) (evt event.Event, err error) {
-	evt = event.NewEvent(CreatedGameEvent, 1, Game{
-		AppId:    appId,
+	game := Game{
 		Id:       uuid.NewV1().String(),
+		AppId:    appId,
 		Theme:    theme,
 		Clue:     clue,
 		Answer:   answer,
 		Url:      url,
 		AuthorId: authorId,
+	}
+
+	err = self.db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(gamesBucketName))
+		evt, err = onCreatedGame(b, game)
+		return err
 	})
-	return evt, onCreatedGame(evt)
+
+	return
 }
 
-func onCreatedGame(evt event.Event) error {
-	return nil
+func onCreatedGame(b *bolt.Bucket, game Game) (evt event.Event, err error) {
+	return event.NewEvent(CreatedGameEvent, 1, game), nil
 }
 
 func (self *Hangman) OnCreatedGame(evt event.Event) error {
-	return onCreatedGame(evt)
+	return nil
 }
 
 func (self *Hangman) UpdateGame(appId, gameId, theme, clue, answer, url, authorId string) (evt event.Event, err error) {
 	evt = event.NewEvent(UpdatedGameEvent, 1, Game{
-		AppId:    appId,
 		Id:       gameId,
+		AppId:    appId,
 		Theme:    theme,
 		Clue:     clue,
 		Answer:   answer,

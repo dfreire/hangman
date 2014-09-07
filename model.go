@@ -1,8 +1,8 @@
 package hangman
 
 type Game struct {
-	AppId       string
 	Id          string
+	AppId       string
 	Theme       string
 	Clue        string
 	Answer      string
@@ -15,8 +15,8 @@ type Game struct {
 }
 
 type Author struct {
-	AppId string
 	Id    string
+	AppId string
 	Email string
 	Games []string
 }
