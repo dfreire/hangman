@@ -2,7 +2,7 @@ package hangman
 
 import (
 	"github.com/puffinframework/event"
-    "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 )
 
 const (
@@ -13,15 +13,15 @@ const (
 
 func (self *Hangman) CreateGame(appId, theme, clue, answer, url, authorId string) (evt event.Event, err error) {
 	evt = event.NewEvent(CreatedGameEvent, 1, Game{
-        AppId:    appId,
-        Id:       uuid.NewV1().String(),
+		AppId:    appId,
+		Id:       uuid.NewV1().String(),
 		Theme:    theme,
 		Clue:     clue,
 		Answer:   answer,
 		Url:      url,
 		AuthorId: authorId,
 	})
-	return
+	return evt, onCreatedGame(evt)
 }
 
 func onCreatedGame(evt event.Event) error {
@@ -42,7 +42,7 @@ func (self *Hangman) UpdateGame(appId, gameId, theme, clue, answer, url, authorI
 		Url:      url,
 		AuthorId: authorId,
 	})
-	return
+	return evt, onUpdatedGame(evt)
 }
 
 func onUpdatedGame(evt event.Event) error {
@@ -58,7 +58,7 @@ func (self *Hangman) RemoveGame(appId, gameId, authorId string) (evt event.Event
 		AppId: appId,
 		Id:    gameId,
 	})
-	return
+	return evt, onRemovedGame(evt)
 }
 
 func onRemovedGame(evt event.Event) error {
