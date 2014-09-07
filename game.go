@@ -23,22 +23,23 @@ func (self *Hangman) CreateGame(appId, theme, clue, answer, url, authorId string
 		Url:      url,
 		AuthorId: authorId,
 	}
-
 	err = self.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(gamesBucketName))
-		evt, err = onCreatedGame(b, game)
-		return err
+		evt = event.NewEvent(CreatedGameEvent, 1, game)
+		return onCreatedGame(b, game)
 	})
-
 	return
 }
 
-func onCreatedGame(b *bolt.Bucket, game Game) (evt event.Event, err error) {
-	return event.NewEvent(CreatedGameEvent, 1, game), nil
+func onCreatedGame(b *bolt.Bucket, game Game) error {
+	return b.Put([]byte(game.Id), []byte(game.AppId))
 }
 
 func (self *Hangman) OnCreatedGame(evt event.Event) error {
-	return nil
+	return self.db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(gamesBucketName))
+		return onCreatedGame(b, evt.Data().(Game))
+	})
 }
 
 func (self *Hangman) UpdateGame(appId, gameId, theme, clue, answer, url, authorId string) (evt event.Event, err error) {
