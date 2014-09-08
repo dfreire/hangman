@@ -13,7 +13,7 @@ const (
 	RemovedGameEvent event.Type = "RemovedGameEvent"
 )
 
-func (self *Hangman) CreateGame(appId, theme, clue, answer, url, authorId string) (evt event.Event, err error) {
+func (self *Hangman) CreateGame(theme, clue, answer, url, authorId string) (evt event.Event, err error) {
 	game := Game{
 		Id:       uuid.NewV1().String(),
 		AppId:    appId,
@@ -42,7 +42,7 @@ func (self *Hangman) OnCreatedGame(evt event.Event) error {
 	})
 }
 
-func (self *Hangman) UpdateGame(appId, gameId, theme, clue, answer, url, authorId string) (evt event.Event, err error) {
+func (self *Hangman) UpdateGame(gameId, theme, clue, answer, url, authorId string) (evt event.Event, err error) {
 	game := Game{
 		Id:       gameId,
 		AppId:    appId,
@@ -56,7 +56,7 @@ func (self *Hangman) UpdateGame(appId, gameId, theme, clue, answer, url, authorI
 	return
 }
 
-func (self *Hangman) RemoveGame(appId, gameId, authorId string) (evt event.Event, err error) {
+func (self *Hangman) RemoveGame(gameId, authorId string) (evt event.Event, err error) {
 	game := Game{
 		AppId: appId,
 		Id:    gameId,
@@ -80,15 +80,15 @@ func (self *Hangman) OnRemovedGame(evt event.Event) error {
 	})
 }
 
-func (self *Hangman) ExistsGame(gameId, appId string) (exists bool, err error) {
+func (self *Hangman) ExistsGame(gameId string) (exists bool, err error) {
 	err = self.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(gamesBucketName))
-		exists = existsGame(b, gameId, appId)
+		exists = existsGame(b, gameId)
 		return nil
 	})
 	return
 }
 
-func existsGame(b *bolt.Bucket, gameId, appId string) bool {
+func existsGame(b *bolt.Bucket, gameId string) bool {
 	return appId == string(b.Get([]byte(gameId)))
 }

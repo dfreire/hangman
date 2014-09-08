@@ -15,7 +15,6 @@ func TestCreate(t *testing.T) {
 	app := hangman.NewApp(db)
 
 	evt, err := app.CreateGame(
-		"Hangman",
 		"TV",
 		"Starring Steve Carell",
 		"The Office",
