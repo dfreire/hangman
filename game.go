@@ -13,7 +13,7 @@ const (
 	RemovedGameEvent event.Type = "RemovedGameEvent"
 )
 
-func (self *Hangman) CreateGame(theme, clue, answer, url, authorId string) (evt event.Event, err error) {
+func (self *HangmanApp) CreateGame(theme, clue, answer, url, authorId string) (evt event.Event, err error) {
 	game := Game{
 		Id:       uuid.NewV1().String(),
 		AppId:    appId,
@@ -35,14 +35,14 @@ func onCreatedGame(b *bolt.Bucket, game Game) error {
 	return b.Put([]byte(game.Id), []byte(game.AppId))
 }
 
-func (self *Hangman) OnCreatedGame(evt event.Event) error {
+func (self *HangmanApp) OnCreatedGame(evt event.Event) error {
 	return self.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(gamesBucketName))
 		return onCreatedGame(b, evt.Data().(Game))
 	})
 }
 
-func (self *Hangman) UpdateGame(gameId, theme, clue, answer, url, authorId string) (evt event.Event, err error) {
+func (self *HangmanApp) UpdateGame(gameId, theme, clue, answer, url, authorId string) (evt event.Event, err error) {
 	game := Game{
 		Id:       gameId,
 		AppId:    appId,
@@ -56,7 +56,7 @@ func (self *Hangman) UpdateGame(gameId, theme, clue, answer, url, authorId strin
 	return
 }
 
-func (self *Hangman) RemoveGame(gameId, authorId string) (evt event.Event, err error) {
+func (self *HangmanApp) RemoveGame(gameId, authorId string) (evt event.Event, err error) {
 	game := Game{
 		AppId: appId,
 		Id:    gameId,
@@ -73,14 +73,14 @@ func onRemovedGame(b *bolt.Bucket, game Game) error {
 	return b.Delete([]byte(game.Id))
 }
 
-func (self *Hangman) OnRemovedGame(evt event.Event) error {
+func (self *HangmanApp) OnRemovedGame(evt event.Event) error {
 	return self.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(gamesBucketName))
 		return onRemovedGame(b, evt.Data().(Game))
 	})
 }
 
-func (self *Hangman) ExistsGame(gameId string) (exists bool, err error) {
+func (self *HangmanApp) ExistsGame(gameId string) (exists bool, err error) {
 	err = self.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(gamesBucketName))
 		exists = existsGame(b, gameId)

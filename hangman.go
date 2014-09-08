@@ -6,15 +6,15 @@ import (
 )
 
 const (
-	appId = "Hangman"
+	appId = "HangmanApp"
 )
 
-type Hangman struct {
+type HangmanApp struct {
 	db  *bolt.DB
 	app *app.App
 }
 
-func NewApp(db *bolt.DB) *Hangman {
+func NewApp(db *bolt.DB) *HangmanApp {
 
 	app := app.NewApp(db)
 
@@ -34,5 +34,5 @@ func NewApp(db *bolt.DB) *Hangman {
 		panic(err)
 	}
 
-	return &Hangman{db: db, app: app}
+	return &HangmanApp{db: db, app: app}
 }
