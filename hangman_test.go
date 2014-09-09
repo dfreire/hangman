@@ -2,7 +2,7 @@ package hangman_test
 
 import (
 	"github.com/boltdb/bolt"
-	"github.com/dfreire/hangman"
+	. "github.com/dfreire/hangman"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
@@ -12,7 +12,7 @@ func TestCreate(t *testing.T) {
 	db := openBoltDB()
 	defer closeBoltDB(db)
 
-	app := hangman.NewApp(db)
+	app := NewApp(db)
 
 	evt, err := app.CreateGame(
 		"TV",
@@ -23,6 +23,9 @@ func TestCreate(t *testing.T) {
 	)
 	assert.NotNil(t, evt)
 	assert.Nil(t, err)
+
+	gameId := evt.Data().(Game).Id
+	assert.NotNil(t, gameId)
 }
 
 func openBoltDB() *bolt.DB {
