@@ -21,11 +21,15 @@ func TestCreate(t *testing.T) {
 		"http://en.wikipedia.org/wiki/The_Office",
 		"dfreire",
 	)
-	assert.NotNil(t, evt)
 	assert.Nil(t, err)
+	assert.NotNil(t, evt)
 
 	gameId := evt.Data().(Game).Id
 	assert.NotNil(t, gameId)
+
+	exists, err := app.ExistsGame(gameId)
+	assert.Nil(t, err)
+	assert.True(t, exists)
 }
 
 func openBoltDB() *bolt.DB {
