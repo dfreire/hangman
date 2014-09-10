@@ -24,12 +24,20 @@ func TestCreate(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, evt)
 
-	gameId := evt.Data().(Game).Id
-	assert.NotNil(t, gameId)
+	game := evt.Data().(Game)
+	assert.NotNil(t, game.Id)
 
-	exists, err := app.ExistsGame(gameId)
+	exists, err := app.ExistsGame(game.Id)
 	assert.Nil(t, err)
 	assert.True(t, exists)
+
+	evt, err = app.RemoveGame(game.Id, game.AuthorId)
+	assert.Nil(t, err)
+	assert.NotNil(t, evt)
+
+	exists, err = app.ExistsGame(game.Id)
+	assert.Nil(t, err)
+	assert.False(t, exists)
 }
 
 func openBoltDB() *bolt.DB {
