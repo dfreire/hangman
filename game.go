@@ -26,19 +26,20 @@ func (self *HangmanApp) CreateGame(theme, clue, answer, url, authorId string) (e
 	err = self.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(gamesBucketName))
 		evt = event.NewEvent(CreatedGameEvent, 1, game)
-		return onCreatedGame(b, game)
+		return onCreatedGame(b, evt)
 	})
 	return
 }
 
-func onCreatedGame(b *bolt.Bucket, game Game) error {
+func onCreatedGame(b *bolt.Bucket, evt event.Event) error {
+	game := evt.Data().(Game)
 	return b.Put([]byte(game.Id), []byte(game.AppId))
 }
 
 func (self *HangmanApp) OnCreatedGame(evt event.Event) error {
 	return self.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(gamesBucketName))
-		return onCreatedGame(b, evt.Data().(Game))
+		return onCreatedGame(b, evt)
 	})
 }
 
@@ -64,19 +65,20 @@ func (self *HangmanApp) RemoveGame(gameId, authorId string) (evt event.Event, er
 	err = self.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(gamesBucketName))
 		evt = event.NewEvent(RemovedGameEvent, 1, game)
-		return onRemovedGame(b, game)
+		return onRemovedGame(b, evt)
 	})
 	return
 }
 
-func onRemovedGame(b *bolt.Bucket, game Game) error {
+func onRemovedGame(b *bolt.Bucket, evt event.Event) error {
+	game := evt.Data().(Game)
 	return b.Delete([]byte(game.Id))
 }
 
 func (self *HangmanApp) OnRemovedGame(evt event.Event) error {
 	return self.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(gamesBucketName))
-		return onRemovedGame(b, evt.Data().(Game))
+		return onRemovedGame(b, evt)
 	})
 }
 
