@@ -1,7 +1,7 @@
 package hangman
 
 type Game struct {
-	Id          string
+	Id          string `sql:"type:varchar(100);unique"`
 	AppId       string
 	Theme       string
 	Clue        string

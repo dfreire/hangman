@@ -37,5 +37,7 @@ func NewApp(boltDB *bolt.DB, gormDB gorm.DB) *HangmanApp {
 		panic(err)
 	}
 
+	gormDB.CreateTable(Game{})
+
 	return &HangmanApp{boltDB: boltDB, gormDB: gormDB, app: app}
 }

@@ -2,6 +2,7 @@ package hangman
 
 import (
 	"github.com/boltdb/bolt"
+	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/puffinframework/event"
 	"github.com/satori/go.uuid"
@@ -27,20 +28,21 @@ func (self *HangmanApp) CreateGame(theme, clue, answer, url, authorId string) (e
 	err = self.boltDB.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(gamesBucketName))
 		evt = event.NewEvent(CreatedGameEvent, 1, game)
-		return onCreatedGame(b, evt)
+		return onCreatedGame(b, self.gormDB, evt)
 	})
 	return
 }
 
-func onCreatedGame(b *bolt.Bucket, evt event.Event) error {
+func onCreatedGame(b *bolt.Bucket, gormDB gorm.DB, evt event.Event) error {
 	game := evt.Data().(Game)
+	gormDB.Create(&game)
 	return b.Put([]byte(game.Id), []byte(game.AppId))
 }
 
 func (self *HangmanApp) OnCreatedGame(evt event.Event) error {
 	return self.boltDB.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(gamesBucketName))
-		return onCreatedGame(b, evt)
+		return onCreatedGame(b, self.gormDB, evt)
 	})
 }
 
@@ -94,4 +96,9 @@ func (self *HangmanApp) ExistsGame(gameId string) (exists bool, err error) {
 
 func existsGame(b *bolt.Bucket, gameId string) bool {
 	return appId == string(b.Get([]byte(gameId)))
+}
+
+func (self *HangmanApp) GetGame(gameId string) (game Game, err error) {
+	self.gormDB.Where("id = ?", gameId).First(&game)
+	return
 }

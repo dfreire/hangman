@@ -29,20 +29,26 @@ func TestCreate(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, evt)
 
-	game := evt.Data().(Game)
-	assert.NotNil(t, game.Id)
+	game1 := evt.Data().(Game)
+	assert.NotNil(t, game1.Id)
 
-	exists, err := app.ExistsGame(game.Id)
+	exists, err := app.ExistsGame(game1.Id)
 	assert.Nil(t, err)
 	assert.True(t, exists)
 
-	evt, err = app.RemoveGame(game.Id, game.AuthorId)
+	evt, err = app.RemoveGame(game1.Id, game1.AuthorId)
 	assert.Nil(t, err)
 	assert.NotNil(t, evt)
 
-	exists, err = app.ExistsGame(game.Id)
+	exists, err = app.ExistsGame(game1.Id)
 	assert.Nil(t, err)
 	assert.False(t, exists)
+
+	game2, err := app.GetGame(game1.Id)
+	assert.Nil(t, err)
+	assert.Equal(t, game1.Id, game2.Id)
+	assert.Equal(t, game1.AppId, game2.AppId)
+	assert.Equal(t, game1.Theme, game2.Theme)
 }
 
 func openBoltDB() *bolt.DB {
@@ -64,6 +70,9 @@ func openGormDB() gorm.DB {
 		panic(err)
 	}
 	db.SingularTable(true)
+	//db.LogMode(true)
+	//db.SetLogger(gorm.Logger{revel.TRACE})
+	//db.SetLogger(log.New(os.Stdout, "\r\n", 0))
 	return db
 }
 
