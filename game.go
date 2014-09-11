@@ -2,6 +2,7 @@ package hangman
 
 import (
 	"github.com/boltdb/bolt"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/puffinframework/event"
 	"github.com/satori/go.uuid"
 )
