@@ -2,9 +2,9 @@ package hangman
 
 import (
 	"github.com/boltdb/bolt"
-	"github.com/puffinframework/app"
+	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3"
-    "database/sql"
+	"github.com/puffinframework/app"
 )
 
 const (
@@ -16,7 +16,7 @@ type HangmanApp struct {
 	app *app.App
 }
 
-func NewApp(db *bolt.DB, sqlDB *sql.DB) *HangmanApp {
+func NewApp(db *bolt.DB, gormDB gorm.DB) *HangmanApp {
 
 	app := app.NewApp(db)
 

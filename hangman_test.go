@@ -1,9 +1,9 @@
 package hangman_test
 
 import (
-    "database/sql"
 	"github.com/boltdb/bolt"
 	. "github.com/dfreire/hangman"
+	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 	"os"
@@ -14,10 +14,10 @@ func TestCreate(t *testing.T) {
 	boltDB := openBoltDB()
 	defer closeBoltDB(boltDB)
 
-    sqlDB := openSqlDB()
-    defer closeSqlDB(sqlDB)
+	gormDB := openGormDB()
+	defer closeGormDB(gormDB)
 
-	app := NewApp(boltDB, sqlDB)
+	app := NewApp(boltDB, gormDB)
 
 	evt, err := app.CreateGame(
 		"TV",
@@ -58,15 +58,16 @@ func closeBoltDB(db *bolt.DB) {
 	db.Close()
 }
 
-func openSqlDB() *sql.DB {
-    db, err := sql.Open("sqlite3", "./test-sql.db")
+func openGormDB() gorm.DB {
+	db, err := gorm.Open("sqlite3", "./test-sql.db")
 	if err != nil {
 		panic(err)
 	}
+	db.SingularTable(true)
 	return db
 }
 
-func closeSqlDB(db *sql.DB) {
+func closeGormDB(db gorm.DB) {
 	defer os.Remove("./test-sql.db")
 	db.Close()
 }
