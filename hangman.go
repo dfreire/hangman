@@ -12,13 +12,14 @@ const (
 )
 
 type HangmanApp struct {
-	db  *bolt.DB
-	app *app.App
+	boltDB *bolt.DB
+	gormDB gorm.DB
+	app    *app.App
 }
 
-func NewApp(db *bolt.DB, gormDB gorm.DB) *HangmanApp {
+func NewApp(boltDB *bolt.DB, gormDB gorm.DB) *HangmanApp {
 
-	app := app.NewApp(db)
+	app := app.NewApp(boltDB)
 
 	exists, err := app.ExistsApp(appId)
 	if err != nil {
@@ -28,7 +29,7 @@ func NewApp(db *bolt.DB, gormDB gorm.DB) *HangmanApp {
 		app.CreateApp(appId)
 	}
 
-	db.Update(func(tx *bolt.Tx) error {
+	boltDB.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists([]byte(gamesBucketName))
 		return err
 	})
@@ -36,5 +37,5 @@ func NewApp(db *bolt.DB, gormDB gorm.DB) *HangmanApp {
 		panic(err)
 	}
 
-	return &HangmanApp{db: db, app: app}
+	return &HangmanApp{boltDB: boltDB, gormDB: gormDB, app: app}
 }
