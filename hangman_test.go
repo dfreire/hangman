@@ -89,6 +89,13 @@ func TestUpdate(t *testing.T) {
 	assert.Equal(t, game1.AppId, game2.AppId)
 	assert.Equal(t, game1.Theme, game2.Theme)
 	assert.NotEqual(t, game1.Clue, game2.Clue)
+
+	game3, err := app.GetGame(game1.Id)
+	assert.Nil(t, err)
+	assert.Equal(t, game3.Id, game2.Id)
+	assert.Equal(t, game3.AppId, game2.AppId)
+	assert.Equal(t, game3.Theme, game2.Theme)
+	assert.Equal(t, game3.Clue, game2.Clue)
 }
 
 func openBoltDB() *bolt.DB {

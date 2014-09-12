@@ -56,8 +56,21 @@ func (self *HangmanApp) UpdateGame(gameId, theme, clue, answer, url, authorId st
 		Url:      url,
 		AuthorId: authorId,
 	}
-	evt = event.NewEvent(UpdatedGameEvent, 1, game)
+	err = self.boltDB.Update(func(tx *bolt.Tx) error {
+		evt = event.NewEvent(UpdatedGameEvent, 1, game)
+		return onUpdatedGame(self.gormDB, evt)
+	})
 	return
+}
+
+func onUpdatedGame(gormDB gorm.DB, evt event.Event) error {
+	game := evt.Data().(Game)
+	gormDB.Save(&game)
+	return nil
+}
+
+func (self *HangmanApp) OnUpdatedGame(evt event.Event) error {
+	return onUpdatedGame(self.gormDB, evt)
 }
 
 func (self *HangmanApp) RemoveGame(gameId, authorId string) (evt event.Event, err error) {
