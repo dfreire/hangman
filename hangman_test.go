@@ -13,7 +13,6 @@ import (
 func TestCreate(t *testing.T) {
 	boltDB := openBoltDB()
 	defer closeBoltDB(boltDB)
-
 	gormDB := openGormDB()
 	defer closeGormDB(gormDB)
 
@@ -49,6 +48,47 @@ func TestCreate(t *testing.T) {
 	assert.Equal(t, game1.Id, game2.Id)
 	assert.Equal(t, game1.AppId, game2.AppId)
 	assert.Equal(t, game1.Theme, game2.Theme)
+}
+
+func TestUpdate(t *testing.T) {
+	boltDB := openBoltDB()
+	defer closeBoltDB(boltDB)
+	gormDB := openGormDB()
+	defer closeGormDB(gormDB)
+
+	app := NewApp(boltDB, gormDB)
+
+	evt1, err1 := app.CreateGame(
+		"TV",
+		"Starring Steve Carell",
+		"The Office",
+		"http://en.wikipedia.org/wiki/The_Office",
+		"dfreire",
+	)
+	assert.Nil(t, err1)
+	assert.NotNil(t, evt1)
+
+	game1 := evt1.Data().(Game)
+	assert.NotNil(t, game1.Id)
+
+	evt2, err2 := app.UpdateGame(
+		game1.Id,
+		game1.Theme,
+		"Starring Ricky Gervais",
+		game1.Answer,
+		game1.Url,
+		game1.AuthorId,
+	)
+	assert.Nil(t, err2)
+	assert.NotNil(t, evt2)
+
+	game2 := evt2.Data().(Game)
+	assert.NotNil(t, game2.Id)
+
+	assert.Equal(t, game1.Id, game2.Id)
+	assert.Equal(t, game1.AppId, game2.AppId)
+	assert.Equal(t, game1.Theme, game2.Theme)
+	assert.NotEqual(t, game1.Clue, game2.Clue)
 }
 
 func openBoltDB() *bolt.DB {
