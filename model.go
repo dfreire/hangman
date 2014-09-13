@@ -7,16 +7,8 @@ type Game struct {
 	Clue        string
 	Answer      string
 	Url         string
-	AuthorId    string
 	Approved    bool
 	FlagCount   int
 	LikeCount   int
 	UnlikeCount int
-}
-
-type Author struct {
-	Id    string
-	AppId string
-	Email string
-	Games []string
 }

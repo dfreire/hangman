@@ -17,13 +17,12 @@ const (
 
 func (self *HangmanApp) CreateGame(theme, clue, answer, url, authorId string) (evt event.Event, err error) {
 	game := Game{
-		Id:       uuid.NewV1().String(),
-		AppId:    appId,
-		Theme:    theme,
-		Clue:     clue,
-		Answer:   answer,
-		Url:      url,
-		AuthorId: authorId,
+		Id:     uuid.NewV1().String(),
+		AppId:  appId,
+		Theme:  theme,
+		Clue:   clue,
+		Answer: answer,
+		Url:    url,
 	}
 	err = self.boltDB.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(gamesBucketName))
@@ -46,15 +45,14 @@ func (self *HangmanApp) OnCreatedGame(evt event.Event) error {
 	})
 }
 
-func (self *HangmanApp) UpdateGame(gameId, theme, clue, answer, url, authorId string) (evt event.Event, err error) {
+func (self *HangmanApp) UpdateGame(gameId, theme, clue, answer, url string) (evt event.Event, err error) {
 	game := Game{
-		Id:       gameId,
-		AppId:    appId,
-		Theme:    theme,
-		Clue:     clue,
-		Answer:   answer,
-		Url:      url,
-		AuthorId: authorId,
+		Id:     gameId,
+		AppId:  appId,
+		Theme:  theme,
+		Clue:   clue,
+		Answer: answer,
+		Url:    url,
 	}
 	err = self.boltDB.Update(func(tx *bolt.Tx) error {
 		evt = event.NewEvent(UpdatedGameEvent, 1, game)
@@ -73,7 +71,7 @@ func (self *HangmanApp) OnUpdatedGame(evt event.Event) error {
 	return onUpdatedGame(self.gormDB, evt)
 }
 
-func (self *HangmanApp) RemoveGame(gameId, authorId string) (evt event.Event, err error) {
+func (self *HangmanApp) RemoveGame(gameId string) (evt event.Event, err error) {
 	game := Game{
 		AppId: appId,
 		Id:    gameId,

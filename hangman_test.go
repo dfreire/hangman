@@ -35,7 +35,7 @@ func TestCreate(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, exists)
 
-	evt, err = app.RemoveGame(game1.Id, game1.AuthorId)
+	evt, err = app.RemoveGame(game1.Id)
 	assert.Nil(t, err)
 	assert.NotNil(t, evt)
 
@@ -77,7 +77,6 @@ func TestUpdate(t *testing.T) {
 		"Starring Ricky Gervais",
 		game1.Answer,
 		game1.Url,
-		game1.AuthorId,
 	)
 	assert.Nil(t, err2)
 	assert.NotNil(t, evt2)
