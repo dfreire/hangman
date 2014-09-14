@@ -35,6 +35,12 @@ func TestCreate(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, exists)
 
+	game2, err := app.GetGame(game1.Id)
+	assert.Nil(t, err)
+	assert.Equal(t, game1.Id, game2.Id)
+	assert.Equal(t, game1.AppId, game2.AppId)
+	assert.Equal(t, game1.Theme, game2.Theme)
+
 	evt, err = app.RemoveGame(game1.Id)
 	assert.Nil(t, err)
 	assert.NotNil(t, evt)
@@ -42,12 +48,6 @@ func TestCreate(t *testing.T) {
 	exists, err = app.ExistsGame(game1.Id)
 	assert.Nil(t, err)
 	assert.False(t, exists)
-
-	game2, err := app.GetGame(game1.Id)
-	assert.Nil(t, err)
-	assert.Equal(t, game1.Id, game2.Id)
-	assert.Equal(t, game1.AppId, game2.AppId)
-	assert.Equal(t, game1.Theme, game2.Theme)
 }
 
 func TestUpdate(t *testing.T) {

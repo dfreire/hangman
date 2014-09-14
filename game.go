@@ -1,6 +1,7 @@
 package hangman
 
 import (
+	"encoding/json"
 	"github.com/boltdb/bolt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3"
@@ -15,34 +16,44 @@ const (
 	RemovedGameEvent event.Type = "RemovedGameEvent"
 )
 
+type Delta struct {
+	operation Operation
+	deltaType string
+	record    interface{}
+}
+
+type Operation string
+
+const (
+	CREATE Operation = "CREATE"
+	UPDATE Operation = "UPDATE"
+	REMOVE Operation = "REMOVE"
+)
+
 func (self *HangmanApp) CreateGame(theme, clue, answer, url, authorId string) (evt event.Event, err error) {
+	id := uuid.NewV1()
 	game := Game{
-		Id:     uuid.NewV1().String(),
+		Id:     id.String(),
 		AppId:  appId,
 		Theme:  theme,
 		Clue:   clue,
 		Answer: answer,
 		Url:    url,
 	}
+	evt = event.NewEvent(CreatedGameEvent, 1, game)
 	err = self.boltDB.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(gamesBucketName))
-		evt = event.NewEvent(CreatedGameEvent, 1, game)
-		return onCreatedGame(b, self.gormDB, evt)
+		delta := Delta{operation: "CREATE", record: game}
+		deltaBytes, _ := json.Marshal(delta)
+		b.Put(id.Bytes(), deltaBytes)
+		return self.OnDelta(delta)
 	})
 	return
 }
 
-func onCreatedGame(b *bolt.Bucket, gormDB gorm.DB, evt event.Event) error {
-	game := evt.Data().(Game)
-	gormDB.Create(&game)
-	return b.Put([]byte(game.Id), []byte(game.AppId))
-}
-
-func (self *HangmanApp) OnCreatedGame(evt event.Event) error {
-	return self.boltDB.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(gamesBucketName))
-		return onCreatedGame(b, self.gormDB, evt)
-	})
+func (self *HangmanApp) OnDelta(delta Delta) error {
+	self.gormDB.Create(delta.record.(Game))
+	return nil
 }
 
 func (self *HangmanApp) UpdateGame(gameId, theme, clue, answer, url string) (evt event.Event, err error) {
@@ -76,33 +87,25 @@ func (self *HangmanApp) RemoveGame(gameId string) (evt event.Event, err error) {
 		AppId: appId,
 		Id:    gameId,
 	}
-	err = self.boltDB.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(gamesBucketName))
-		evt = event.NewEvent(RemovedGameEvent, 1, game)
-		return onRemovedGame(b, evt)
-	})
+	evt = event.NewEvent(RemovedGameEvent, 1, game)
+	err = onRemovedGame(self.gormDB, evt)
 	return
 }
 
-func onRemovedGame(b *bolt.Bucket, evt event.Event) error {
+func onRemovedGame(gormDB gorm.DB, evt event.Event) error {
 	game := evt.Data().(Game)
-	return b.Delete([]byte(game.Id))
+	gormDB.Delete(&game)
+	return nil
 }
 
 func (self *HangmanApp) OnRemovedGame(evt event.Event) error {
-	return self.boltDB.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(gamesBucketName))
-		return onRemovedGame(b, evt)
-	})
+	return onRemovedGame(self.gormDB, evt)
 }
 
 func (self *HangmanApp) ExistsGame(gameId string) (exists bool, err error) {
-	err = self.boltDB.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(gamesBucketName))
-		exists = existsGame(b, gameId)
-		return nil
-	})
-	return
+	game := Game{}
+	self.gormDB.Where("id = ?", gameId).First(&game)
+	return game.Id == gameId, nil
 }
 
 func existsGame(b *bolt.Bucket, gameId string) bool {
