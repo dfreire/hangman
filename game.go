@@ -16,18 +16,21 @@ const (
 	RemovedGameEvent event.Type = "RemovedGameEvent"
 )
 
-type Delta struct {
-	operation Operation
-	deltaType string
-	record    interface{}
+type DeltaHeader struct {
+	id            string
+	operation     DeltaOperation
+	recordType    string
+	recordVersion int
 }
 
-type Operation string
+type DeltaRecord interface{}
+
+type DeltaOperation string
 
 const (
-	CREATE Operation = "CREATE"
-	UPDATE Operation = "UPDATE"
-	REMOVE Operation = "REMOVE"
+	CREATE DeltaOperation = "CREATE"
+	UPDATE DeltaOperation = "UPDATE"
+	REMOVE DeltaOperation = "REMOVE"
 )
 
 func (self *HangmanApp) CreateGame(theme, clue, answer, url, authorId string) (evt event.Event, err error) {
@@ -43,16 +46,17 @@ func (self *HangmanApp) CreateGame(theme, clue, answer, url, authorId string) (e
 	evt = event.NewEvent(CreatedGameEvent, 1, game)
 	err = self.boltDB.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(gamesBucketName))
-		delta := Delta{operation: "CREATE", record: game}
-		deltaBytes, _ := json.Marshal(delta)
-		b.Put(id.Bytes(), deltaBytes)
-		return self.OnDelta(delta)
+		header := DeltaHeader{operation: "Create", recordType: "Game", recordVersion: 1}
+		headerBytes, _ := json.Marshal(header)
+		recordBytes, _ := json.Marshal(game)
+		b.Put(headerBytes, recordBytes)
+		return self.OnDelta(header, game)
 	})
 	return
 }
 
-func (self *HangmanApp) OnDelta(delta Delta) error {
-	self.gormDB.Create(delta.record.(Game))
+func (self *HangmanApp) OnDelta(header DeltaHeader, record DeltaRecord) error {
+	self.gormDB.Create(record.(Game))
 	return nil
 }
 
