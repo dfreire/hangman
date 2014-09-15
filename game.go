@@ -110,7 +110,7 @@ func (self *HangmanApp) GetGame(gameId string) (game Game, err error) {
 }
 
 func (self *HangmanApp) ExistsGame(gameId string) (exists bool, err error) {
-	game := Game{}
-	self.gormDB.Where("id = ?", gameId).First(&game)
-	return game.Id == gameId, nil
+	game, err := self.GetGame(gameId)
+	exists = game.Id == gameId
+	return
 }
