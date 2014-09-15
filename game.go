@@ -17,10 +17,10 @@ const (
 )
 
 type DeltaHeader struct {
-	id            string
-	operation     DeltaOperation
-	recordType    string
-	recordVersion int
+	Id            string
+	Operation     DeltaOperation
+	RecordType    string
+	RecordVersion int
 }
 
 type DeltaRecord interface{}
@@ -45,18 +45,24 @@ func (self *HangmanApp) CreateGame(theme, clue, answer, url, authorId string) (e
 	}
 	evt = event.NewEvent(CreatedGameEvent, 1, game)
 	err = self.boltDB.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(gamesBucketName))
-		header := DeltaHeader{operation: "Create", recordType: "Game", recordVersion: 1}
+		bucket := tx.Bucket([]byte(gamesBucketName))
+		header := DeltaHeader{Operation: CREATE, RecordType: "Game", RecordVersion: 1}
 		headerBytes, _ := json.Marshal(header)
 		recordBytes, _ := json.Marshal(game)
-		b.Put(headerBytes, recordBytes)
+		bucket.Put(headerBytes, recordBytes)
 		return self.OnDelta(header, game)
 	})
 	return
 }
 
 func (self *HangmanApp) OnDelta(header DeltaHeader, record DeltaRecord) error {
-	self.gormDB.Create(record.(Game))
+	game := record.(Game)
+	switch header.Operation {
+	case CREATE:
+		self.gormDB.Create(game)
+	case UPDATE:
+		self.gormDB.Save(&game)
+	}
 	return nil
 }
 
@@ -69,21 +75,16 @@ func (self *HangmanApp) UpdateGame(gameId, theme, clue, answer, url string) (evt
 		Answer: answer,
 		Url:    url,
 	}
+	evt = event.NewEvent(UpdatedGameEvent, 1, game)
 	err = self.boltDB.Update(func(tx *bolt.Tx) error {
-		evt = event.NewEvent(UpdatedGameEvent, 1, game)
-		return onUpdatedGame(self.gormDB, evt)
+		bucket := tx.Bucket([]byte(gamesBucketName))
+		header := DeltaHeader{Operation: UPDATE, RecordType: "Game", RecordVersion: 1}
+		headerBytes, _ := json.Marshal(header)
+		recordBytes, _ := json.Marshal(game)
+		bucket.Put(headerBytes, recordBytes)
+		return self.OnDelta(header, game)
 	})
 	return
-}
-
-func onUpdatedGame(gormDB gorm.DB, evt event.Event) error {
-	game := evt.Data().(Game)
-	gormDB.Save(&game)
-	return nil
-}
-
-func (self *HangmanApp) OnUpdatedGame(evt event.Event) error {
-	return onUpdatedGame(self.gormDB, evt)
 }
 
 func (self *HangmanApp) RemoveGame(gameId string) (evt event.Event, err error) {
