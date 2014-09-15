@@ -3,8 +3,6 @@ package hangman
 import (
 	"encoding/json"
 	"github.com/boltdb/bolt"
-	"github.com/jinzhu/gorm"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/puffinframework/event"
 	"github.com/satori/go.uuid"
 )
@@ -55,17 +53,6 @@ func (self *HangmanApp) CreateGame(theme, clue, answer, url, authorId string) (e
 	return
 }
 
-func (self *HangmanApp) OnDelta(header DeltaHeader, record DeltaRecord) error {
-	game := record.(Game)
-	switch header.Operation {
-	case CREATE:
-		self.gormDB.Create(game)
-	case UPDATE:
-		self.gormDB.Save(&game)
-	}
-	return nil
-}
-
 func (self *HangmanApp) UpdateGame(gameId, theme, clue, answer, url string) (evt event.Event, err error) {
 	game := Game{
 		Id:     gameId,
@@ -93,31 +80,37 @@ func (self *HangmanApp) RemoveGame(gameId string) (evt event.Event, err error) {
 		Id:    gameId,
 	}
 	evt = event.NewEvent(RemovedGameEvent, 1, game)
-	err = onRemovedGame(self.gormDB, evt)
+	err = self.boltDB.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(gamesBucketName))
+		header := DeltaHeader{Operation: REMOVE, RecordType: "Game", RecordVersion: 1}
+		headerBytes, _ := json.Marshal(header)
+		recordBytes, _ := json.Marshal(game)
+		bucket.Put(headerBytes, recordBytes)
+		return self.OnDelta(header, game)
+	})
 	return
 }
 
-func onRemovedGame(gormDB gorm.DB, evt event.Event) error {
-	game := evt.Data().(Game)
-	gormDB.Delete(&game)
+func (self *HangmanApp) OnDelta(header DeltaHeader, record DeltaRecord) error {
+	game := record.(Game)
+	switch header.Operation {
+	case CREATE:
+		self.gormDB.Create(game)
+	case UPDATE:
+		self.gormDB.Save(&game)
+	case REMOVE:
+		self.gormDB.Delete(&game)
+	}
 	return nil
 }
 
-func (self *HangmanApp) OnRemovedGame(evt event.Event) error {
-	return onRemovedGame(self.gormDB, evt)
+func (self *HangmanApp) GetGame(gameId string) (game Game, err error) {
+	self.gormDB.Where("id = ?", gameId).First(&game)
+	return
 }
 
 func (self *HangmanApp) ExistsGame(gameId string) (exists bool, err error) {
 	game := Game{}
 	self.gormDB.Where("id = ?", gameId).First(&game)
 	return game.Id == gameId, nil
-}
-
-func existsGame(b *bolt.Bucket, gameId string) bool {
-	return appId == string(b.Get([]byte(gameId)))
-}
-
-func (self *HangmanApp) GetGame(gameId string) (game Game, err error) {
-	self.gormDB.Where("id = ?", gameId).First(&game)
-	return
 }
