@@ -68,7 +68,13 @@ func (self *HangmanApp) UpdateGame(gameId, theme, clue, answer, url string) (evt
 		Url:    url,
 	}
 	evt = event.NewEvent(UpdatedGameEvent, 1, game)
-	err = self.boltDB.Update(func(tx *bolt.Tx) error {
+	err = self.OnUpdatedGameEvent(evt)
+	return
+}
+
+func (self *HangmanApp) OnUpdatedGameEvent(evt event.Event) error {
+	game := evt.Data().(Game)
+	return self.boltDB.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(gamesBucketName))
 		header := DeltaHeader{Operation: UPDATE, RecordType: "Game", RecordVersion: 1}
 		headerBytes, _ := json.Marshal(header)
@@ -76,7 +82,6 @@ func (self *HangmanApp) UpdateGame(gameId, theme, clue, answer, url string) (evt
 		bucket.Put(headerBytes, recordBytes)
 		return self.OnDelta(header, game)
 	})
-	return
 }
 
 func (self *HangmanApp) RemoveGame(gameId string) (evt event.Event, err error) {
@@ -85,7 +90,12 @@ func (self *HangmanApp) RemoveGame(gameId string) (evt event.Event, err error) {
 		Id:    gameId,
 	}
 	evt = event.NewEvent(RemovedGameEvent, 1, game)
-	err = self.boltDB.Update(func(tx *bolt.Tx) error {
+	return
+}
+
+func (self *HangmanApp) OnRemovedGameEvent(evt event.Event) error {
+	game := evt.Data().(Game)
+	return self.boltDB.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(gamesBucketName))
 		header := DeltaHeader{Operation: REMOVE, RecordType: "Game", RecordVersion: 1}
 		headerBytes, _ := json.Marshal(header)
@@ -93,7 +103,6 @@ func (self *HangmanApp) RemoveGame(gameId string) (evt event.Event, err error) {
 		bucket.Put(headerBytes, recordBytes)
 		return self.OnDelta(header, game)
 	})
-	return
 }
 
 func (self *HangmanApp) OnDelta(header DeltaHeader, record DeltaRecord) error {
