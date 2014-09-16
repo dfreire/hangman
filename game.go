@@ -42,7 +42,13 @@ func (self *HangmanApp) CreateGame(theme, clue, answer, url, authorId string) (e
 		Url:    url,
 	}
 	evt = event.NewEvent(CreatedGameEvent, 1, game)
-	err = self.boltDB.Update(func(tx *bolt.Tx) error {
+	err = self.OnCreatedGameEvent(evt)
+	return
+}
+
+func (self *HangmanApp) OnCreatedGameEvent(evt event.Event) error {
+	game := evt.Data().(Game)
+	return self.boltDB.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(gamesBucketName))
 		header := DeltaHeader{Operation: CREATE, RecordType: "Game", RecordVersion: 1}
 		headerBytes, _ := json.Marshal(header)
@@ -50,7 +56,6 @@ func (self *HangmanApp) CreateGame(theme, clue, answer, url, authorId string) (e
 		bucket.Put(headerBytes, recordBytes)
 		return self.OnDelta(header, game)
 	})
-	return
 }
 
 func (self *HangmanApp) UpdateGame(gameId, theme, clue, answer, url string) (evt event.Event, err error) {
