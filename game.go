@@ -90,6 +90,7 @@ func (self *HangmanApp) RemoveGame(gameId string) (evt event.Event, err error) {
 		Id:    gameId,
 	}
 	evt = event.NewEvent(RemovedGameEvent, 1, game)
+	err = self.OnRemovedGameEvent(evt)
 	return
 }
 
