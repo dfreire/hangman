@@ -107,14 +107,16 @@ func (self *HangmanApp) OnRemovedGameEvent(evt event.Event) error {
 }
 
 func (self *HangmanApp) OnDelta(header DeltaHeader, record DeltaRecord) error {
-	game := record.(Game)
-	switch header.Operation {
-	case CREATE:
-		self.gormDB.Create(game)
-	case UPDATE:
-		self.gormDB.Save(&game)
-	case REMOVE:
-		self.gormDB.Delete(&game)
+	if header.RecordType == "Game" {
+		game := record.(Game)
+		switch header.Operation {
+		case CREATE:
+			self.gormDB.Create(game)
+		case UPDATE:
+			self.gormDB.Save(&game)
+		case REMOVE:
+			self.gormDB.Delete(&game)
+		}
 	}
 	return nil
 }
