@@ -14,6 +14,10 @@ const (
 	RemovedGameEvent event.Type = "RemovedGameEvent"
 )
 
+type Delta struct {
+	CommitNumber int
+}
+
 type DeltaHeader struct {
 	Id            string
 	Operation     DeltaOperation
