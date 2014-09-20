@@ -15,17 +15,21 @@ const (
 )
 
 type Delta struct {
-	CommitNumber int
+	Header  DeltaHeader
+	Records []DeltaRecord
 }
 
 type DeltaHeader struct {
+	CommitNumber int
+}
+
+type DeltaRecord struct {
 	Id            string
 	Operation     DeltaOperation
 	RecordType    string
 	RecordVersion int
+	Record        interface{}
 }
-
-type DeltaRecord interface{}
 
 type DeltaOperation string
 
@@ -54,11 +58,16 @@ func (self *HangmanApp) OnCreatedGameEvent(evt event.Event) error {
 	game := evt.Data().(Game)
 	return self.boltDB.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(gamesBucketName))
-		header := DeltaHeader{Operation: CREATE, RecordType: "Game", RecordVersion: 1}
-		headerBytes, _ := json.Marshal(header)
-		recordBytes, _ := json.Marshal(game)
-		bucket.Put(headerBytes, recordBytes)
-		return self.OnDelta(header, game)
+		delta := Delta{
+			Header: DeltaHeader{CommitNumber: 1},
+			Records: []DeltaRecord{
+				DeltaRecord{Operation: CREATE, RecordType: "Game", RecordVersion: 1, Record: game},
+			},
+		}
+		headerBytes, _ := json.Marshal(delta.Header)
+		recordsBytes, _ := json.Marshal(delta.Records)
+		bucket.Put(headerBytes, recordsBytes)
+		return self.OnDelta(delta)
 	})
 }
 
@@ -80,11 +89,16 @@ func (self *HangmanApp) OnUpdatedGameEvent(evt event.Event) error {
 	game := evt.Data().(Game)
 	return self.boltDB.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(gamesBucketName))
-		header := DeltaHeader{Operation: UPDATE, RecordType: "Game", RecordVersion: 1}
-		headerBytes, _ := json.Marshal(header)
-		recordBytes, _ := json.Marshal(game)
-		bucket.Put(headerBytes, recordBytes)
-		return self.OnDelta(header, game)
+		delta := Delta{
+			Header: DeltaHeader{CommitNumber: 1},
+			Records: []DeltaRecord{
+				DeltaRecord{Operation: UPDATE, RecordType: "Game", RecordVersion: 1, Record: game},
+			},
+		}
+		headerBytes, _ := json.Marshal(delta.Header)
+		recordsBytes, _ := json.Marshal(delta.Records)
+		bucket.Put(headerBytes, recordsBytes)
+		return self.OnDelta(delta)
 	})
 }
 
@@ -102,24 +116,31 @@ func (self *HangmanApp) OnRemovedGameEvent(evt event.Event) error {
 	game := evt.Data().(Game)
 	return self.boltDB.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(gamesBucketName))
-		header := DeltaHeader{Operation: REMOVE, RecordType: "Game", RecordVersion: 1}
-		headerBytes, _ := json.Marshal(header)
-		recordBytes, _ := json.Marshal(game)
-		bucket.Put(headerBytes, recordBytes)
-		return self.OnDelta(header, game)
+		delta := Delta{
+			Header: DeltaHeader{CommitNumber: 1},
+			Records: []DeltaRecord{
+				DeltaRecord{Operation: REMOVE, RecordType: "Game", RecordVersion: 1, Record: game},
+			},
+		}
+		headerBytes, _ := json.Marshal(delta.Header)
+		recordsBytes, _ := json.Marshal(delta.Records)
+		bucket.Put(headerBytes, recordsBytes)
+		return self.OnDelta(delta)
 	})
 }
 
-func (self *HangmanApp) OnDelta(header DeltaHeader, record DeltaRecord) error {
-	if header.RecordType == "Game" {
-		game := record.(Game)
-		switch header.Operation {
-		case CREATE:
-			self.gormDB.Create(game)
-		case UPDATE:
-			self.gormDB.Save(&game)
-		case REMOVE:
-			self.gormDB.Delete(&game)
+func (self *HangmanApp) OnDelta(delta Delta) error {
+	for _, record := range delta.Records {
+		if record.RecordType == "Game" {
+			game := record.Record.(Game)
+			switch record.Operation {
+			case CREATE:
+				self.gormDB.Create(game)
+			case UPDATE:
+				self.gormDB.Save(&game)
+			case REMOVE:
+				self.gormDB.Delete(&game)
+			}
 		}
 	}
 	return nil
