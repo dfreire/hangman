@@ -39,6 +39,10 @@ const (
 	REMOVE DeltaOperation = "REMOVE"
 )
 
+type DeltaHandler interface {
+	OnDelta(delta Delta)
+}
+
 func (self *HangmanApp) CreateGame(theme, clue, answer, url, authorId string) (evt event.Event, err error) {
 	id := uuid.NewV1()
 	game := Game{
