@@ -32,6 +32,7 @@ type Operation string
 const (
 	CREATE Operation = "CREATE"
 	UPDATE Operation = "UPDATE"
+	UPSERT Operation = "UPSERT"
 	REMOVE Operation = "REMOVE"
 )
 
