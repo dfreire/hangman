@@ -3,6 +3,7 @@ package hangman
 import (
 	"encoding/json"
 	"github.com/boltdb/bolt"
+	"github.com/dfreire/hangman/deltas"
 	"github.com/puffinframework/event"
 	"github.com/satori/go.uuid"
 )
@@ -13,32 +14,6 @@ const (
 	UpdatedGameEvent event.Type = "UpdatedGameEvent"
 	RemovedGameEvent event.Type = "RemovedGameEvent"
 )
-
-type Commit struct {
-	Number int
-	Deltas []Delta
-}
-
-type Delta struct {
-	Id            string
-	Operation     Operation
-	RecordType    string
-	RecordVersion int
-	Record        interface{}
-}
-
-type Operation string
-
-const (
-	CREATE Operation = "CREATE"
-	UPDATE Operation = "UPDATE"
-	UPSERT Operation = "UPSERT"
-	REMOVE Operation = "REMOVE"
-)
-
-type DeltaHandler interface {
-	OnDelta(delta Delta)
-}
 
 func (self *HangmanApp) CreateGame(theme, clue, answer, url, authorId string) (evt event.Event, err error) {
 	id := uuid.NewV1()
@@ -59,10 +34,10 @@ func (self *HangmanApp) OnCreatedGameEvent(evt event.Event) error {
 	game := evt.Data().(Game)
 	return self.boltDB.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(gamesBucketName))
-		commit := Commit{
+		commit := deltas.Commit{
 			Number: 1,
-			Deltas: []Delta{
-				Delta{Operation: CREATE, RecordType: "Game", RecordVersion: 1, Record: game},
+			Deltas: []deltas.Delta{
+				deltas.Delta{Operation: deltas.CREATE, RecordType: "Game", RecordVersion: 1, Record: game},
 			},
 		}
 		key, _ := json.Marshal(commit.Number)
@@ -90,10 +65,10 @@ func (self *HangmanApp) OnUpdatedGameEvent(evt event.Event) error {
 	game := evt.Data().(Game)
 	return self.boltDB.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(gamesBucketName))
-		commit := Commit{
+		commit := deltas.Commit{
 			Number: 1,
-			Deltas: []Delta{
-				Delta{Operation: UPDATE, RecordType: "Game", RecordVersion: 1, Record: game},
+			Deltas: []deltas.Delta{
+				deltas.Delta{Operation: deltas.UPDATE, RecordType: "Game", RecordVersion: 1, Record: game},
 			},
 		}
 		key, _ := json.Marshal(commit.Number)
@@ -117,10 +92,10 @@ func (self *HangmanApp) OnRemovedGameEvent(evt event.Event) error {
 	game := evt.Data().(Game)
 	return self.boltDB.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(gamesBucketName))
-		commit := Commit{
+		commit := deltas.Commit{
 			Number: 1,
-			Deltas: []Delta{
-				Delta{Operation: REMOVE, RecordType: "Game", RecordVersion: 1, Record: game},
+			Deltas: []deltas.Delta{
+				deltas.Delta{Operation: deltas.REMOVE, RecordType: "Game", RecordVersion: 1, Record: game},
 			},
 		}
 		key, _ := json.Marshal(commit.Number)
@@ -130,16 +105,16 @@ func (self *HangmanApp) OnRemovedGameEvent(evt event.Event) error {
 	})
 }
 
-func (self *HangmanApp) OnDeltas(deltas []Delta) error {
-	for _, delta := range deltas {
+func (self *HangmanApp) OnDeltas(dd []deltas.Delta) error {
+	for _, delta := range dd {
 		if delta.RecordType == "Game" {
 			game := delta.Record.(Game)
 			switch delta.Operation {
-			case CREATE:
+			case deltas.CREATE:
 				self.gormDB.Create(game)
-			case UPDATE:
+			case deltas.UPDATE:
 				self.gormDB.Save(&game)
-			case REMOVE:
+			case deltas.REMOVE:
 				self.gormDB.Delete(&game)
 			}
 		}
