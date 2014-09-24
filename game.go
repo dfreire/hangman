@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	gamesBucketName             = "HangmanGames"
+	deltasBucketName            = "HangmanDeltas"
 	CreatedGameEvent event.Type = "CreatedGameEvent"
 	UpdatedGameEvent event.Type = "UpdatedGameEvent"
 	RemovedGameEvent event.Type = "RemovedGameEvent"
@@ -33,7 +33,7 @@ func (self *HangmanApp) CreateGame(theme, clue, answer, url, authorId string) (e
 func (self *HangmanApp) OnCreatedGameEvent(evt event.Event) error {
 	game := evt.Data().(Game)
 	return self.boltDB.Update(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(gamesBucketName))
+		bucket := tx.Bucket([]byte(deltasBucketName))
 		delta := deltas.New([]deltas.Operation{
 			deltas.Operation{Type: deltas.CREATE, Record: deltas.Record{Type: "Game", Version: 1, Value: game}},
 		})
@@ -61,7 +61,7 @@ func (self *HangmanApp) UpdateGame(gameId, theme, clue, answer, url string) (evt
 func (self *HangmanApp) OnUpdatedGameEvent(evt event.Event) error {
 	game := evt.Data().(Game)
 	return self.boltDB.Update(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(gamesBucketName))
+		bucket := tx.Bucket([]byte(deltasBucketName))
 		delta := deltas.New([]deltas.Operation{
 			deltas.Operation{Type: deltas.UPDATE, Record: deltas.Record{Type: "Game", Version: 1, Value: game}},
 		})
@@ -85,7 +85,7 @@ func (self *HangmanApp) RemoveGame(gameId string) (evt event.Event, err error) {
 func (self *HangmanApp) OnRemovedGameEvent(evt event.Event) error {
 	game := evt.Data().(Game)
 	return self.boltDB.Update(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(gamesBucketName))
+		bucket := tx.Bucket([]byte(deltasBucketName))
 		delta := deltas.New([]deltas.Operation{
 			deltas.Operation{Type: deltas.REMOVE, Record: deltas.Record{Type: "Game", Version: 1, Value: game}},
 		})

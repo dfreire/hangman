@@ -30,7 +30,7 @@ func NewApp(boltDB *bolt.DB, gormDB gorm.DB) *HangmanApp {
 	}
 
 	boltDB.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte(gamesBucketName))
+		_, err := tx.CreateBucketIfNotExists([]byte(deltasBucketName))
 		return err
 	})
 	if err != nil {
