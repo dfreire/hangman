@@ -34,16 +34,13 @@ func (self *HangmanApp) OnCreatedGameEvent(evt event.Event) error {
 	game := evt.Data().(Game)
 	return self.boltDB.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(gamesBucketName))
-		commit := deltas.Commit{
-			Number: 1,
-			Deltas: []deltas.Delta{
-				deltas.Delta{Operation: deltas.CREATE, RecordType: "Game", RecordVersion: 1, Record: game},
-			},
-		}
-		key, _ := json.Marshal(commit.Number)
-		value, _ := json.Marshal(commit.Deltas)
+		delta := deltas.New([]deltas.Operation{
+			deltas.Operation{Type: deltas.CREATE, Record: deltas.Record{Type: "Game", Version: 1, Value: game}},
+		})
+		key, _ := json.Marshal(delta.Id)
+		value, _ := json.Marshal(delta.Operations)
 		bucket.Put(key, value)
-		return self.OnDeltas(commit.Deltas)
+		return self.OnDelta(delta)
 	})
 }
 
@@ -65,16 +62,13 @@ func (self *HangmanApp) OnUpdatedGameEvent(evt event.Event) error {
 	game := evt.Data().(Game)
 	return self.boltDB.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(gamesBucketName))
-		commit := deltas.Commit{
-			Number: 1,
-			Deltas: []deltas.Delta{
-				deltas.Delta{Operation: deltas.UPDATE, RecordType: "Game", RecordVersion: 1, Record: game},
-			},
-		}
-		key, _ := json.Marshal(commit.Number)
-		value, _ := json.Marshal(commit.Deltas)
+		delta := deltas.New([]deltas.Operation{
+			deltas.Operation{Type: deltas.UPDATE, Record: deltas.Record{Type: "Game", Version: 1, Value: game}},
+		})
+		key, _ := json.Marshal(delta.Id)
+		value, _ := json.Marshal(delta.Operations)
 		bucket.Put(key, value)
-		return self.OnDeltas(commit.Deltas)
+		return self.OnDelta(delta)
 	})
 }
 
@@ -92,24 +86,21 @@ func (self *HangmanApp) OnRemovedGameEvent(evt event.Event) error {
 	game := evt.Data().(Game)
 	return self.boltDB.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(gamesBucketName))
-		commit := deltas.Commit{
-			Number: 1,
-			Deltas: []deltas.Delta{
-				deltas.Delta{Operation: deltas.REMOVE, RecordType: "Game", RecordVersion: 1, Record: game},
-			},
-		}
-		key, _ := json.Marshal(commit.Number)
-		value, _ := json.Marshal(commit.Deltas)
+		delta := deltas.New([]deltas.Operation{
+			deltas.Operation{Type: deltas.REMOVE, Record: deltas.Record{Type: "Game", Version: 1, Value: game}},
+		})
+		key, _ := json.Marshal(delta.Id)
+		value, _ := json.Marshal(delta.Operations)
 		bucket.Put(key, value)
-		return self.OnDeltas(commit.Deltas)
+		return self.OnDelta(delta)
 	})
 }
 
-func (self *HangmanApp) OnDeltas(dd []deltas.Delta) error {
-	for _, delta := range dd {
-		if delta.RecordType == "Game" {
-			game := delta.Record.(Game)
-			switch delta.Operation {
+func (self *HangmanApp) OnDelta(delta deltas.Delta) error {
+	for _, operation := range delta.Operations {
+		if operation.Record.Type == "Game" {
+			game := operation.Record.Value.(Game)
+			switch operation.Type {
 			case deltas.CREATE:
 				self.gormDB.Create(game)
 			case deltas.UPDATE:

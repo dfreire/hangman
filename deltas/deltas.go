@@ -1,28 +1,41 @@
 package deltas
 
-type Commit struct {
-	Number int
-	Deltas []Delta
-}
+import (
+	"github.com/satori/go.uuid"
+)
 
 type Delta struct {
-	Id            string
-	Operation     Operation
-	RecordType    string
-	RecordVersion int
-	Record        interface{}
+	Id         string
+	Operations []Operation
 }
 
-type Operation string
+type Operation struct {
+	Type   OperationType
+	Record Record
+}
+
+type OperationType string
 
 const (
-	CREATE Operation = "CREATE"
-	UPDATE Operation = "UPDATE"
-	UPSERT Operation = "UPSERT"
-	REMOVE Operation = "REMOVE"
+	CREATE OperationType = "CREATE"
+	UPDATE OperationType = "UPDATE"
+	UPSERT OperationType = "UPSERT"
+	REMOVE OperationType = "REMOVE"
 )
+
+type Record struct {
+	Type    string
+	Id      string
+	Version int
+	Value   interface{}
+}
 
 type DeltaHandler interface {
 	OnDelta(delta Delta)
 }
 
+func New(operations []Operation) (delta Delta) {
+	delta.Id = uuid.NewV1().String()
+	delta.Operations = operations
+	return
+}
