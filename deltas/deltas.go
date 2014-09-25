@@ -1,6 +1,8 @@
 package deltas
 
 import (
+	"encoding/json"
+	"github.com/boltdb/bolt"
 	"github.com/satori/go.uuid"
 )
 
@@ -30,12 +32,17 @@ type Record struct {
 	Value   interface{}
 }
 
-type DeltaHandler interface {
-	OnDelta(delta Delta)
-}
+type DeltaHandler func(delta Delta)
 
 func New(operations []Operation) (delta Delta) {
 	delta.Id = uuid.NewV1().String()
 	delta.Operations = operations
 	return
+}
+
+func Save(bucket *bolt.Bucket, delta Delta, handler DeltaHandler) {
+	key, _ := json.Marshal(delta.Id)
+	value, _ := json.Marshal(delta.Operations)
+	bucket.Put(key, value)
+	handler(delta)
 }
