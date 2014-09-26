@@ -80,7 +80,7 @@ func (self *HangmanApp) OnRemovedGameEvent(evt event.Event) error {
 func (self *HangmanApp) Save(delta deltas.Delta) error {
 	return self.boltDB.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(deltasBucketName))
-		deltas.Save(bucket, delta, func(delta deltas.Delta) {
+		return deltas.Save(bucket, delta, func(delta deltas.Delta) {
 			for _, operation := range delta.Operations {
 				if operation.Record.Type == "Game" {
 					game := operation.Record.Value.(Game)
@@ -95,7 +95,6 @@ func (self *HangmanApp) Save(delta deltas.Delta) error {
 				}
 			}
 		})
-		return nil
 	})
 }
 

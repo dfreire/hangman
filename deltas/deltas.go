@@ -40,9 +40,22 @@ func New(operations []Operation) (delta Delta) {
 	return
 }
 
-func Save(bucket *bolt.Bucket, delta Delta, handler DeltaHandler) {
-	key, _ := json.Marshal(delta.Id)
-	value, _ := json.Marshal(delta.Operations)
-	bucket.Put(key, value)
+func Save(bucket *bolt.Bucket, delta Delta, handler DeltaHandler) error {
+	key, err := json.Marshal(delta.Id)
+	if err != nil {
+		return err
+	}
+
+	value, err := json.Marshal(delta.Operations)
+	if err != nil {
+		return err
+	}
+
+	err = bucket.Put(key, value)
+	if err != nil {
+		return err
+	}
+
 	handler(delta)
+	return nil
 }
