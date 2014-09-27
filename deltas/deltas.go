@@ -40,6 +40,16 @@ func New(operations []Operation) (delta Delta) {
 	return
 }
 
+func withBoltDB(boltDB *bolt.DB, bucketName string) func(delta Delta, handler DeltaHandler) error {
+	f := func(delta Delta, handler DeltaHandler) error {
+		return boltDB.Update(func(tx *bolt.Tx) error {
+			bucket := tx.Bucket([]byte(bucketName))
+			return Save(bucket, delta, handler)
+		})
+	}
+	return f
+}
+
 func Save(bucket *bolt.Bucket, delta Delta, handler DeltaHandler) error {
 	key, err := json.Marshal(delta.Id)
 	if err != nil {
