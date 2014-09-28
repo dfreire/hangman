@@ -80,3 +80,11 @@ func Save(bucket *bolt.Bucket, delta Delta, handler DeltaHandler) error {
 	handler(delta)
 	return nil
 }
+
+func Save2(services map[string]interface{}, delta Delta, handler DeltaHandler) error {
+	service := services["deltaService"].(DeltaService)
+	return service.boltDB.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(service.bucketName))
+		return Save(bucket, delta, handler)
+	})
+}
