@@ -88,10 +88,3 @@ func Save2(registry map[string]interface{}, delta Delta, handler DeltaHandler) e
 		return Save(bucket, delta, handler)
 	})
 }
-
-func Save3(service DeltaService, delta Delta, handler DeltaHandler) error {
-	return service.boltDB.Update(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(service.bucketName))
-		return Save(bucket, delta, handler)
-	})
-}
