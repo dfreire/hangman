@@ -52,7 +52,7 @@ func (self DeltaService) Save(delta Delta, handler DeltaHandler) error {
 	})
 }
 
-func withBoltDB(boltDB *bolt.DB, bucketName string) func(delta Delta, handler DeltaHandler) error {
+func createSaveDeltaFunc(boltDB *bolt.DB, bucketName string) func(delta Delta, handler DeltaHandler) error {
 	return func(delta Delta, handler DeltaHandler) error {
 		return boltDB.Update(func(tx *bolt.Tx) error {
 			bucket := tx.Bucket([]byte(bucketName))
