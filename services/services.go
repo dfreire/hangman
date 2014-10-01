@@ -13,3 +13,7 @@ func New() Services {
 func (self Services) Set(id string, service interface{}) {
 	self.serviceById[id] = service
 }
+
+func (self Services) Get(id string) (service interface{}) {
+	return self.serviceById[id]
+}
