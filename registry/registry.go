@@ -10,10 +10,10 @@ func New() Registry {
 	}
 }
 
-func (self Registry) Set(id string, service interface{}) {
+func (self Registry) SetService(id string, service interface{}) {
 	self.serviceById[id] = service
 }
 
-func (self Registry) Get(id string) (service interface{}) {
+func (self Registry) GetService(id string) (service interface{}) {
 	return self.serviceById[id]
 }
