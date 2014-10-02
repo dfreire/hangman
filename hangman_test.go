@@ -16,6 +16,8 @@ func TestCreate(t *testing.T) {
 	gormDB := openGormDB()
 	defer closeGormDB(gormDB)
 
+	//deltaService :=
+
 	app := NewApp(boltDB, gormDB)
 
 	evt, err := app.CreateGame(

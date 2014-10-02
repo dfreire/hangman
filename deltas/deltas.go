@@ -41,16 +41,26 @@ func New(operations []Operation) (delta Delta) {
 }
 
 type DeltaService interface {
-	Save(delta Delta, handler DeltaHandler)
+	Save(delta Delta, handler DeltaHandler) error
 }
 
-func createSaveDeltaFunc(boltDB *bolt.DB, bucketName string) func(delta Delta, handler DeltaHandler) error {
-	return func(delta Delta, handler DeltaHandler) error {
-		return boltDB.Update(func(tx *bolt.Tx) error {
-			bucket := tx.Bucket([]byte(bucketName))
-			return Save(bucket, delta, handler)
-		})
+type BoltDeltaService struct {
+	boltDB     *bolt.DB
+	bucketName string
+}
+
+func NewBoltDeltaService(boltDB *bolt.DB, bucketName string) DeltaService {
+	return BoltDeltaService{
+		boltDB:     boltDB,
+		bucketName: bucketName,
 	}
+}
+
+func (self BoltDeltaService) Save(delta Delta, handler DeltaHandler) error {
+	return self.boltDB.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(self.bucketName))
+		return Save(bucket, delta, handler)
+	})
 }
 
 func Save(bucket *bolt.Bucket, delta Delta, handler DeltaHandler) error {
