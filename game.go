@@ -1,14 +1,12 @@
 package hangman
 
 import (
-	"github.com/boltdb/bolt"
 	"github.com/dfreire/hangman/deltas"
 	"github.com/puffinframework/event"
 	"github.com/satori/go.uuid"
 )
 
 const (
-	deltasBucketName            = "HangmanDeltas"
 	CreatedGameEvent event.Type = "CreatedGameEvent"
 	UpdatedGameEvent event.Type = "UpdatedGameEvent"
 	RemovedGameEvent event.Type = "RemovedGameEvent"
@@ -31,7 +29,7 @@ func (self *HangmanApp) CreateGame(theme, clue, answer, url, authorId string) (e
 
 func (self *HangmanApp) OnCreatedGameEvent(evt event.Event) error {
 	game := evt.Data().(Game)
-	delta := deltas.New([]deltas.Operation{
+	delta := deltas.NewDelta([]deltas.Operation{
 		deltas.Operation{Type: deltas.CREATE, Record: deltas.Record{Type: "Game", Version: 1, Value: game}},
 	})
 	return self.Save(delta)
@@ -53,7 +51,7 @@ func (self *HangmanApp) UpdateGame(gameId, theme, clue, answer, url string) (evt
 
 func (self *HangmanApp) OnUpdatedGameEvent(evt event.Event) error {
 	game := evt.Data().(Game)
-	delta := deltas.New([]deltas.Operation{
+	delta := deltas.NewDelta([]deltas.Operation{
 		deltas.Operation{Type: deltas.UPDATE, Record: deltas.Record{Type: "Game", Version: 1, Value: game}},
 	})
 	return self.Save(delta)
@@ -71,30 +69,27 @@ func (self *HangmanApp) RemoveGame(gameId string) (evt event.Event, err error) {
 
 func (self *HangmanApp) OnRemovedGameEvent(evt event.Event) error {
 	game := evt.Data().(Game)
-	delta := deltas.New([]deltas.Operation{
+	delta := deltas.NewDelta([]deltas.Operation{
 		deltas.Operation{Type: deltas.REMOVE, Record: deltas.Record{Type: "Game", Version: 1, Value: game}},
 	})
 	return self.Save(delta)
 }
 
 func (self *HangmanApp) Save(delta deltas.Delta) error {
-	return self.boltDB.Update(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(deltasBucketName))
-		return deltas.Save(bucket, delta, func(delta deltas.Delta) {
-			for _, operation := range delta.Operations {
-				if operation.Record.Type == "Game" {
-					game := operation.Record.Value.(Game)
-					switch operation.Type {
-					case deltas.CREATE:
-						self.gormDB.Create(game)
-					case deltas.UPDATE:
-						self.gormDB.Save(&game)
-					case deltas.REMOVE:
-						self.gormDB.Delete(&game)
-					}
+	return self.deltaService.Save(delta, func(delta deltas.Delta) {
+		for _, operation := range delta.Operations {
+			if operation.Record.Type == "Game" {
+				game := operation.Record.Value.(Game)
+				switch operation.Type {
+				case deltas.CREATE:
+					self.gormDB.Create(game)
+				case deltas.UPDATE:
+					self.gormDB.Save(&game)
+				case deltas.REMOVE:
+					self.gormDB.Delete(&game)
 				}
 			}
-		})
+		}
 	})
 }
 
