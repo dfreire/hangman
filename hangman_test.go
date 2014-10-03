@@ -3,6 +3,7 @@ package hangman_test
 import (
 	"github.com/boltdb/bolt"
 	. "github.com/dfreire/hangman"
+	"github.com/dfreire/hangman/deltas"
 	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
@@ -16,9 +17,9 @@ func TestCreate(t *testing.T) {
 	gormDB := openGormDB()
 	defer closeGormDB(gormDB)
 
-	//deltaService :=
+	deltaService := deltas.NewBoltDeltaService(boltDB, "HangmanDeltas")
 
-	app := NewApp(boltDB, gormDB)
+	app := NewApp(deltaService, gormDB)
 
 	evt, err := app.CreateGame(
 		"TV",
@@ -58,7 +59,9 @@ func TestUpdate(t *testing.T) {
 	gormDB := openGormDB()
 	defer closeGormDB(gormDB)
 
-	app := NewApp(boltDB, gormDB)
+	deltaService := deltas.NewBoltDeltaService(boltDB, "HangmanDeltas")
+
+	app := NewApp(deltaService, gormDB)
 
 	evt1, err1 := app.CreateGame(
 		"TV",
