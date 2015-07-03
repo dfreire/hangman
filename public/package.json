@@ -1,0 +1,19 @@
+{
+    "name": "quick-webapp-template",
+    "version": "0.0.1",
+    "scripts": {
+        "build": "webpack",
+        "watch": "webpack -w",
+        "prod": "webpack -p"
+    },
+    "dependencies": {
+        "react": "*",
+        "react-router": "*"
+    },
+    "devDependencies": {
+        "babel-loader": "*",
+        "style-loader": "*",
+        "css-loader": "*",
+        "sass-loader": "*"
+    }
+}
